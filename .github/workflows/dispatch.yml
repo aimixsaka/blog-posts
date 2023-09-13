@@ -1,0 +1,38 @@
+name: Dispatch
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: format post source
+        run: |
+          for post in *.md; do 
+            if ! head -1 "$post" | grep -q "+++"; then
+              post_tmp="${post%.md}_tmp.md"
+              mv "$post" "$post_tmp"
+              printf "%s\n%s\n%s\n%s\n\n" "+++" \
+                "titile = '${post%.md}'" \
+                "date = $(date +'%Y-%m-%dT%H:%M:%S+08:00')" \
+                "+++" > "$post"
+              cat "$post_tmp" >> "$post"
+              rm "$post_tmp"
+            fi
+          done
+
+      - name: repository dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.PAT }}
+          repository: aimixsaka/blog
+          event-type: update_posts
