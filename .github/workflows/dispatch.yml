@@ -14,6 +14,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          persist-credentials: true
 
       - name: format post source
         run: |
@@ -29,7 +32,13 @@ jobs:
               rm "$post_tmp"
             fi
           done
-
+          
+      - name: push changes
+        uses: ad-m/github-push-action@master
+        with:
+          ssh: true
+          branch: main
+          
       - name: repository dispatch
         uses: peter-evans/repository-dispatch@v2
         with:
