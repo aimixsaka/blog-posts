@@ -3,8 +3,6 @@ name: Dispatch
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
   workflow_dispatch:
 
@@ -14,38 +12,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          persist-credentials: true
 
-      - name: format post source
-        run: |
-          for post in *.md; do 
-            if ! head -1 "$post" | grep -q "+++"; then
-              post_tmp="${post%.md}_tmp.md"
-              mv "$post" "$post_tmp"
-              printf "%s\n%s\n%s\n%s\n\n" "+++" \
-                "titile = '${post%.md}'" \
-                "date = $(date +'%Y-%m-%dT%H:%M:%S+08:00')" \
-                "+++" > "$post"
-              cat "$post_tmp" >> "$post"
-              rm "$post_tmp"
-            fi
-          done
-
-      - name: commit changes
-        run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add .
-          git commit -m "format posts"
-          
-      - name: push changes
-        uses: ad-m/github-push-action@master
-        with:
-          ssh: true
-          branch: main
-          
+      # tirgger aimixsaka/blog repo's action when push to this repo
       - name: repository dispatch
         uses: peter-evans/repository-dispatch@v2
         with:
